@@ -4,6 +4,7 @@ import numpy as np
 import io
 import os
 import re
+import subprocess
 
 @st.cache_data
 def load_data():
@@ -85,11 +86,34 @@ def parse_keywords(text: str) -> list[str]:
         return []
     return [token.strip() for token in text.split(';') if token.strip()]
 
+def render_extract_tab():
+    """UI for running extract.py and streaming the logs in real time."""
+    st.header("Extrair Dados")
+    st.write("Clique no botão abaixo para iniciar a extração dos dados do PNCP.")
+    if st.button("Iniciar Extração"):
+        st.info("Logs de execução:")
+        log_placeholder = st.empty()
+        with st.spinner("Extraindo dados..."):
+            process = subprocess.Popen(
+                ["python", os.path.join(os.path.dirname(__file__), "extract.py")],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True
+            )
+            logs = ""
+            for line in process.stdout:
+                logs += line
+                log_placeholder.text(logs)
+            process.wait()
+            if process.returncode == 0:
+                st.success("Extração concluída com sucesso!")
+            else:
+                st.error("Falha na extração. Verifique os logs acima.")
+
 # --- Main App Interface ---
-def main_interface():
+def render_search_tab():
     """Displays the main application interface after successful login."""
     df_full = load_data()
-    st.title("Bem-vindo ao Portal de Licitações, Renato!")
 
     # # --- Company Description Textarea ---
     # st.write("##### Por favor, descreva sua empresa: quem vocês são, o que fazem e o que estão procurando.")
@@ -211,6 +235,11 @@ def main_interface():
 
 # --- App Execution ---
 if st.session_state.logged_in:
-    main_interface()
+    st.title("Bem-vindo ao Portal de Licitações, Renato!")
+    tab_pesquisar, tab_extrair = st.tabs(["Pesquisar Dados", "Extrair Dados"])
+    with tab_pesquisar:
+        render_search_tab()
+    with tab_extrair:
+        render_extract_tab()
 else:
     login_page()

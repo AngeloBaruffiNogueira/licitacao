@@ -155,7 +155,7 @@ def process_data(df: pd.DataFrame) -> pd.DataFrame:
 def main():
     """Main function to execute the script."""
 
-    full_load = False
+    full_load = True
 
     parameters = {
         # "dataInicial": "20250618",  # Replace with the desired start date
@@ -178,9 +178,6 @@ def main():
         contracts_data = process_data(contracts_data)
         save_to_csv(contracts_data, "contracts_clean.csv")
         save_to_pickle(contracts_data, 'contracts_clean.pkl')
-        print(f"\nTotal contracts fetched: {len(contracts_data)}")
-        print("\nFirst 5 rows of the combined data:")
-        print(contracts_data.head())
 
 if __name__ == "__main__":
     main()
